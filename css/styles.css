@@ -20,6 +20,10 @@ ul {
     text-align: left;
 }
 
+.container {
+    text-align: center;
+}
+
 .navbar-brand {
     font-family: Pokesolid, sans-serif;
     font-size: 1.6em;
@@ -32,12 +36,12 @@ ul {
     border-color: rgba(0,0,0,0.8)!important;
 }
 
-.results-col {
+/*.results-col {
     background: whitesmoke;
     border: 1px solid lightgrey;
     border-radius: 10px;
     text-align: center;
-}
+}*/
 
 .pokemon-sprite, .pokemon-info-box, .pokemon-stats {
     width: 100%;
@@ -47,7 +51,7 @@ ul {
     border: solid black 2px;
 }
 
-.pokemon-stats {
+.pokemon-stats, .pokemon-info-box {
     margin-top: 4px;
 }
 
@@ -72,6 +76,7 @@ ul {
     padding: 0.15rem;
     font-size: 0.8rem;
     margin: 1px;
+    text-transform: uppercase;
 }
 
 .pokemon-type-normal {
@@ -196,4 +201,127 @@ ul {
 
 .list-group-item {
     background: none;
+    border: none;
+}
+
+.stat {
+    border-top: solid black 1px!important;
+    padding: 0.5rem 1rem;
+}
+
+.stat-top {
+    padding: 0.5rem 1rem; 
+}
+
+#move-col {
+    background: white;
+    border: solid black 2px;
+    padding: 0;
+}
+
+.nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
+    border-color: black black #fff;
+}
+
+.nav-tabs {
+    border-color: black;
+    margin-top: 0.2rem;
+}
+
+.nav-item:hover {
+    border-color: rgb(168, 168, 168)!important;
+    border-bottom: white solid 1px!important;
+}
+
+.move-list-title {
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 1.2rem;
+    padding: 8px 0 6px;
+    border-bottom: solid black 2px;
+}
+
+.move-title {
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.card {
+    margin: 4px auto 0;
+    border: 2px solid black;
+    border-radius: 0;
+    background: whitesmoke;
+}
+
+.card-body {
+    padding: 0.75rem;
+}
+
+.move-stats {
+    margin: 0.4rem 0 0 0;
+    border: solid black 1px;
+    background: white;
+}
+
+.move-stat {
+    border: none;
+}
+
+.move-stat-mid {
+    border-right: solid black 1px;
+}
+
+.card-text {
+    border-left: solid black 1px;
+    border-right: solid black 1px;
+    border-bottom: solid black 1px;
+    margin-bottom: 0;
+    padding: 0.2rem;
+    background: white;
+}
+
+.move-category-physical {
+    color: rgb(31, 31, 31);
+    background: rgb(255, 193, 193);
+    border: solid rgb(253, 41, 41) 2px;
+}
+
+.move-category-special {
+    color: rgb(31, 31, 31);
+    background: rgb(174, 189, 255);
+    border: solid rgb(0, 60, 255) 2px;
+}
+
+.move-category-status {
+    color: rgb(31, 31, 31);
+    background: rgb(202, 202, 202);
+    border: solid rgb(36, 36, 36) 2px;
+}
+
+/*----------Media query section-------------*/
+@media screen and (min-width: 992px){
+    .tab-pane {
+        height: 506px;
+        overflow-y: scroll;
+        padding: 0.5rem 0;
+    }
+
+    .pokemon-sprite {
+        height: 210px;
+        width: 210px;
+    }
+}
+
+@media screen and (min-width: 1200px){
+    .tab-pane {
+        height: 551px;
+        overflow-y: scroll;
+        padding: 0.5rem 0;
+    }
+
+    .pokemon-sprite {
+        height: 255px;
+        width: 255px;
+    }
 }

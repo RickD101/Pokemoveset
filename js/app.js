@@ -37,17 +37,21 @@ const domManager = {
         goButton.on('click',()=>{
             logicManager.searchPokemon($('#searchBar').val(), $('#genSelect').val());
         });
-        $('#searchBar').keydown((event) =>{ // not working properly atm
-            if (event.keyCode === 13){
+        searchBar.keypress((event) =>{ // not working properly atm
+            if (event.which == 13){
                 logicManager.searchPokemon($('#searchBar').val(), $('#genSelect').val());
             }
-        })
-        
+        });
+
         // append to the DOM
         $('.form-row').append(searchBar);
         $('.form-row').append(genSelect);
         $('.form-row').append(goButton);
 
+    },
+
+    // this method triggers the popover alert
+    emptyInputAlert(){
         // add popover alert to searchBar
         $('#searchBar').popover({
             content: "Please input a Pokemon's name or Pokedex number!",
@@ -55,40 +59,51 @@ const domManager = {
             animation: true,
             trigger: "manual"
         });
-    },
 
-    // this method triggers the popover alert
-    emptyInputAlert(){
         $('#searchBar').popover('show');
         setTimeout(() => {
             $('#searchBar').popover('hide');
         }, 3000);
     },
 
-    // this method draws the results screen
-    renderPokemon(){
+    errorInputAlert(error){
+        $('#searchBar').popover({
+            content: error,
+            placement: "top",
+            animation: true,
+            trigger: "manual"
+        });
+
+        $('#searchBar').popover('show');
+        setTimeout(() => {
+            $('#searchBar').popover('hide');
+        }, 3000);
+    },
+
+    // this method draws the pokemon info screen
+    renderPokemon(pokemon){
         // empty the container
         $('.container').children().remove();
 
         // render the basic structure
         $('.container').append(
-            `<div class="row d-flex justify-content-center" style="margin-top: 80px;">
-                <div class="col-3 m-1 pt-3 pb-3 results-col" id="info-col"></div>
-                <div class="col-4 m-1 pt-3 pb-3 results-col" id="move-col"></div>
-                <div class="col-4 m-1 pt-3 pb-3 results-col" id="saved-col"></div>
+            `<div class="row d-flex justify-content-center" style="margin-top: 86px;">
+                <div class="col-3 results-col" id="info-col"></div>
+                <div class="col-5 results-col" id="move-col"></div>
+                <div class="col-4 results-col" id="saved-col"></div>
             </div>`);
         
         // render the info column
         $('#info-col').append(
-            `<img class="pokemon-sprite" src=${logicManager.currentPokemon.spriteURL}>`
+            `<img class="pokemon-sprite" src=${pokemon.spriteURL}>`
         );
         $('#info-col').append(
             `<div class="pokemon-info-box pb-2">
-                <div class="pokemon-name">${logicManager.currentPokemon.name}</div>
-                <div class="mb-1">#${logicManager.currentPokemon.info.dexNumber}</div>
+                <div class="pokemon-name">${pokemon.name}</div>
+                <div class="mb-1">#${pokemon.info.dexNumber}</div>
             </div>`
         );
-        logicManager.currentPokemon.info.type.forEach(type =>{
+        pokemon.info.type.forEach(type =>{
             $('.pokemon-info-box').append(
                 `<span class="pokemon-type pokemon-type-${type}">${type}</span>`
             );
@@ -97,16 +112,63 @@ const domManager = {
             `<div class="pokemon-stats pt-2">
                 <div class="pokemon-stat-title">BASE STATS</div>
                 <ul class="list-group list-group-flush stat-list">
-                    <li class="list-group-item" id="first-stat">HP: ${logicManager.currentPokemon.info.stats.HP}</li>
-                    <li class="list-group-item">Attack: ${logicManager.currentPokemon.info.stats.ATK}</li>
-                    <li class="list-group-item">Defense: ${logicManager.currentPokemon.info.stats.DEF}</li>
-                    <li class="list-group-item">Special Attack: ${logicManager.currentPokemon.info.stats.SAK}</li>
-                    <li class="list-group-item">Special Defense: ${logicManager.currentPokemon.info.stats.SDF}</li>
-                    <li class="list-group-item" id="last-stat">Speed: ${logicManager.currentPokemon.info.stats.SPD}</li>
+                    <li class="list-group-item stat-top"><b>HP:</b> ${pokemon.info.stats.HP}</li>
+                    <li class="list-group-item stat"><b>Attack:</b> ${pokemon.info.stats.ATK}</li>
+                    <li class="list-group-item stat"><b>Defense:</b> ${pokemon.info.stats.DEF}</li>
+                    <li class="list-group-item stat"><b>Special Attack:</b> ${pokemon.info.stats.SAK}</li>
+                    <li class="list-group-item stat"><b>Special Defense:</b> ${pokemon.info.stats.SDF}</li>
+                    <li class="list-group-item stat" id="last-stat"><b>Speed:</b> ${pokemon.info.stats.SPD}</li>
                 </ul>
             </div>`
         );
     },
+
+    // populate the move lists and add event listeners
+    renderMoveList(gen){
+        // render the basic tab structure
+        $('#move-col').append(
+            `<div class="move-list-title">Available moves in ${gen}</div>`
+        );
+        $('#move-col').append(
+            `<nav>
+                <div class="nav nav-tabs justify-content-center" id="nav-tab" role="tablist">
+                    <a class="nav-item nav-link active" id="nav-levelUp-tab" data-toggle="tab" href="#nav-levelUp" role="tab">Level up</a>
+                    <a class="nav-item nav-link" id="nav-machine-tab" data-toggle="tab" href="#nav-machine" role="tab">TM/HM</a>
+                    <a class="nav-item nav-link" id="nav-egg-tab" data-toggle="tab" href="#nav-egg" role="tab">Egg</a>
+                    <a class="nav-item nav-link" id="nav-tutor-tab" data-toggle="tab" href="#nav-tutor" role="tab">Tutor</a>
+                </div>
+            </nav>
+            <div class="tab-content" id="nav-tabContent">
+                <div class="tab-pane fade show active" id="nav-levelUp" role="tabpanel"></div>
+                <div class="tab-pane fade" id="nav-machine" role="tabpanel"></div>
+                <div class="tab-pane fade" id="nav-egg" role="tabpanel"></div>
+                <div class="tab-pane fade" id="nav-tutor" role="tabpanel"></div>
+            </div>`
+        );
+    },
+
+    renderMove(move, tab){
+        let card = $(`<div class="card" style="width: 95%;"></div>`);
+        let cardBody = $(
+            `<div class="card-body">
+                <span class="move-title">${move.name}</span>
+                <span class="pokemon-type pokemon-type-${move.type}">${move.type}</span>
+                <span class="pokemon-type move-category-${move.category}">${move.category}</span></br>
+                <ul class="list-group list-group-horizontal move-stats">
+                    <li class="list-group-item flex-fill move-stat move-stat-mid"><b>PWR:</b> ${move.power}</li>
+                    <li class="list-group-item flex-fill move-stat move-stat-mid"><b>ACC:</b> ${move.accuracy}</li>
+                    <li class="list-group-item flex-fill move-stat"><b>PP:</b> ${move.pp}</li>
+                </ul>
+            </div>`
+        );
+        if (tab === "levelUp"){
+            $(cardBody).append(`<p class="card-text">Learns at level ${move.learnAt}.</p>`);
+        }
+        $(cardBody).append(`<p class="card-text">${move.description}</p>`);
+        $(card).append(cardBody);
+        $(`#nav-${tab}`).append(card);
+
+    }
 
 };
 
@@ -130,7 +192,7 @@ const logicManager = {
         },
         moves: {
             levelUp: [],
-            tm: [],
+            machine: [],
             tutor: [],
             egg: []
         }
@@ -140,7 +202,7 @@ const logicManager = {
     searchPokemon(name, generation){
         if(name){
             // modify punctuation etc. to suit API call
-            name = name.toLowerCase();
+            name = name.replace(" ","-").toLowerCase();
 
             $.ajax({url:`https://pokeapi.co/api/v2/pokemon/${name}`})
             .then( // map pokemon info from API to in-built currentPokemon object
@@ -160,14 +222,17 @@ const logicManager = {
                     this.currentPokemon.info.stats.SDF = pokemon.stats[1].base_stat;
                     this.currentPokemon.info.stats.SPD = pokemon.stats[0].base_stat;
 
-                    pokemon.moves.forEach(move =>{
-                        this.sortMoves(move, generation); // call the move sorting function for each move listed
-                    });
+                    // render the pokemon information screens
+                    domManager.renderPokemon(this.currentPokemon);
+                    domManager.renderMoveList(generation);
+
+                    // call the move sorting function for each move listed
+                    this.sortMoves(pokemon.moves, generation);
+
                     console.log(logicManager.currentPokemon); // need to remove later
-                    domManager.renderPokemon();
                 },
                 (badResponse)=>{
-                    console.log(badResponse);
+                    domManager.errorInputAlert(badResponse.responseText);
                 }
             )
             .catch(error=>{console.log(error)});
@@ -179,68 +244,112 @@ const logicManager = {
 
     // this method analyses the moves to pick only those from the selected generation
     // and sorts them by learn method
-    sortMoves(move, generation){
-        let genName;
-        
-        if (generation === 'Generation 1'){
-            genName = 'red-blue';
-        }
-        else if (generation === 'Generation 2'){
-            genName = 'gold-silver';
-        }
-        else if (generation === 'Generation 3'){
-            genName = 'ruby-sapphire';
-        }
-        else if (generation === 'Generation 4'){
-            genName = 'diamond-pearl';
-        }
-        else if (generation === 'Generation 5'){
-            genName = 'black-white';
-        }
-        else if (generation === 'Generation 6'){
-            genName = 'x-y';
-        }
-        else if (generation === 'Generation 7'){
-            genName = 'sun-moon';
-        }
-
-        for (let i=0; i<move.version_group_details.length; i++){
-        
-            let moveInfo = {};
-
-            if (move.version_group_details[i].version_group.name === genName){
-                
-                $.ajax({url: move.move.url})
-                .then((moveData) =>{
-                    moveInfo.name = moveData.name;
-                    moveInfo.type = moveData.type.name;
-                    moveInfo.category = moveData.damage_class.name;
-                    moveInfo.power = moveData.power;
-                    moveInfo.accuracy = moveData.accuracy;
-                    moveInfo.pp = moveData.pp;
-                    moveInfo.description = moveData.effect_entries[0].short_effect;
-
-                    if (move.version_group_details[i].move_learn_method.name === 'level-up'){
-                        moveInfo.learnAt = move.version_group_details[i].level_learned_at;
-                        this.currentPokemon.moves.levelUp.push(moveInfo);
-                    }
-                    else if (move.version_group_details[i].move_learn_method.name === 'machine'){
-                        this.currentPokemon.moves.tm.push(moveInfo);
-                    }
-                    else if (move.version_group_details[i].move_learn_method.name === 'tutor'){
-                        this.currentPokemon.moves.tutor.push(moveInfo);
-                    }
-                    else if (move.version_group_details[i].move_learn_method.name === 'egg'){
-                        this.currentPokemon.moves.egg.push(moveInfo);
-                    }
-                },
-                (badResponse)=>{
-                    console.log(badResponse);
-                })
-                .catch(error=>{console.log(error)});
+    sortMoves(moves, generation){
+        moves.forEach(move =>{
+            let genName;
+            
+            if (generation === 'Generation 1'){
+                genName = 'red-blue';
             }
-        }
+            else if (generation === 'Generation 2'){
+                genName = 'gold-silver';
+            }
+            else if (generation === 'Generation 3'){
+                genName = 'ruby-sapphire';
+            }
+            else if (generation === 'Generation 4'){
+                genName = 'diamond-pearl';
+            }
+            else if (generation === 'Generation 5'){
+                genName = 'black-white';
+            }
+            else if (generation === 'Generation 6'){
+                genName = 'x-y';
+            }
+            else if (generation === 'Generation 7'){
+                genName = 'sun-moon';
+            }
+
+            for (let i=0; i<move.version_group_details.length; i++){
+            
+                let moveInfo = {};
+
+                if (move.version_group_details[i].version_group.name === genName){
+                    
+                    $.ajax({url: move.move.url})
+                    .then((moveData) =>{
+                        moveInfo.name = moveData.name.replace(/-/g," ");
+                        moveInfo.type = moveData.type.name;
+                        moveInfo.category = moveData.damage_class.name;
+                        if (moveData.power){
+                            moveInfo.power = moveData.power;
+                        }
+                        else{
+                            moveInfo.power = "-";
+                        }
+                        if (moveData.accuracy){
+                            moveInfo.accuracy = moveData.accuracy;
+                        }
+                        else{
+                            moveInfo.accuracy = "-";
+                        }
+                        moveInfo.pp = moveData.pp;
+                        moveInfo.description = moveData.effect_entries[0].short_effect.replace('$effect_chance', moveData.effect_chance);
+
+                        if (move.version_group_details[i].move_learn_method.name === 'level-up'){
+                            moveInfo.learnAt = move.version_group_details[i].level_learned_at;
+                            this.currentPokemon.moves.levelUp.push(moveInfo);
+                            domManager.renderMove(moveInfo,'levelUp');
+                        }
+                        else if (move.version_group_details[i].move_learn_method.name === 'machine'){
+                            this.currentPokemon.moves.machine.push(moveInfo);
+                            domManager.renderMove(moveInfo,'machine');
+                        }
+                        else if (move.version_group_details[i].move_learn_method.name === 'tutor'){
+                            this.currentPokemon.moves.tutor.push(moveInfo);
+                            domManager.renderMove(moveInfo,'tutor');
+                        }
+                        else if (move.version_group_details[i].move_learn_method.name === 'egg'){
+                            this.currentPokemon.moves.egg.push(moveInfo);
+                            domManager.renderMove(moveInfo,'egg');
+                        }
+                    },
+                    (badResponse)=>{
+                        moveInfo.name = move.move.name.replace(/-/g," ");
+                        moveInfo.type = badResponse.responseText;
+                        moveInfo.category = badResponse.responseText;
+                        moveInfo.power = badResponse.responseText;
+                        moveInfo.accuracy = badResponse.responseText;
+                        moveInfo.pp = badResponse.responseText;
+                        moveInfo.description = badResponse.responseText;
+
+                        if (move.version_group_details[i].move_learn_method.name === 'level-up'){
+                            moveInfo.learnAt = move.version_group_details[i].level_learned_at;
+                            this.currentPokemon.moves.levelUp.push(moveInfo);
+                            domManager.renderMove(moveInfo,'levelUp');
+                        }
+                        else if (move.version_group_details[i].move_learn_method.name === 'machine'){
+                            this.currentPokemon.moves.machine.push(moveInfo);
+                            domManager.renderMove(moveInfo,'machine');
+                        }
+                        else if (move.version_group_details[i].move_learn_method.name === 'tutor'){
+                            this.currentPokemon.moves.tutor.push(moveInfo);
+                            domManager.renderMove(moveInfo,'tutor');
+                        }
+                        else if (move.version_group_details[i].move_learn_method.name === 'egg'){
+                            this.currentPokemon.moves.egg.push(moveInfo);
+                            domManager.renderMove(moveInfo,'egg');
+                        }
+                    })
+                    .catch(error=>{console.log(error)});
+                }
+            }
+        });
     },
 
+    // adds functionality for saving movesets
+    saveMove(){
+        console.log('it works');
+    },
 
 };
