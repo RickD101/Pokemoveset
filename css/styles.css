@@ -68,8 +68,9 @@ ul {
 .pokemon-stat-title {
     font-weight: bold;
     font-size: 1rem;
+    background: lightgrey;
     border-bottom: solid black 2px;
-    padding-bottom: 6px;
+    padding: 0.5rem 0 6px;
 }
 
 .pokemon-type {
@@ -238,6 +239,7 @@ ul {
     font-weight: bold;
     font-size: 1.2rem;
     padding: 8px 0 6px;
+    background: lightgrey;
     border-bottom: solid black 2px;
 }
 
@@ -299,7 +301,54 @@ ul {
     border: solid rgb(36, 36, 36) 2px;
 }
 
-/*----------Media query section-------------*/
+.move-helper {
+    padding: 0.2rem 0;
+    border: solid black 2px;
+    background: whitesmoke;
+    width: 200px;
+}
+
+.moveset-box {
+    background: white;
+    border: solid black 2px;
+    border-bottom-width: 1px;
+}
+
+#moveBox1, #moveBox2 {
+    margin-bottom: 4px;
+}
+
+.moveset-box-title {
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 1rem;
+    background: lightgrey;
+    padding: 0.2rem 0;
+    border-bottom: solid black 2px;
+}
+
+.moveset-box-move {
+    background: white;
+    border-bottom: solid black 1px;
+}
+
+.moveset-box-move-title, .moveset-box-move-type {
+    text-transform: uppercase;
+    margin-right: 0.2rem;
+}
+
+.moveset-box-move-title {
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+
+.moveset-box-move-type {
+    font-size: 0.7rem;
+    padding: 0.1rem;
+}
+
+/*----------Media-querys---------------------*/
+
 @media screen and (min-width: 992px){
     .tab-pane {
         height: 506px;

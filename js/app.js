@@ -8,7 +8,6 @@ $(()=>{
 
 // DOM manager object for controlling rendering and user input to the DOM
 const domManager = {
-
     // this method draws the initial searchbar screen
     renderSearchBar(){
         // first empty the container of all elements
@@ -37,7 +36,7 @@ const domManager = {
         goButton.on('click',()=>{
             logicManager.searchPokemon($('#searchBar').val(), $('#genSelect').val());
         });
-        searchBar.keypress((event) =>{ // not working properly atm
+        $('.form-row').keypress((event) =>{ // not working properly atm
             if (event.which == 13){
                 logicManager.searchPokemon($('#searchBar').val(), $('#genSelect').val());
             }
@@ -47,7 +46,6 @@ const domManager = {
         $('.form-row').append(searchBar);
         $('.form-row').append(genSelect);
         $('.form-row').append(goButton);
-
     },
 
     // this method triggers the popover alert
@@ -66,6 +64,7 @@ const domManager = {
         }, 3000);
     },
 
+    // same as above but for bad server response on API call
     errorInputAlert(error){
         $('#searchBar').popover({
             content: error,
@@ -80,17 +79,19 @@ const domManager = {
         }, 3000);
     },
 
-    // this method draws the pokemon info screen
+    // draw the pokemon info screen
     renderPokemon(pokemon){
-        // empty the container
+        // empty the container and remove popovers
         $('.container').children().remove();
+        $('.popover-body').remove();
+        $('.arrow').remove();
 
         // render the basic structure
         $('.container').append(
             `<div class="row d-flex justify-content-center" style="margin-top: 86px;">
                 <div class="col-3 results-col" id="info-col"></div>
                 <div class="col-5 results-col" id="move-col"></div>
-                <div class="col-4 results-col" id="saved-col"></div>
+                <div class="col-4 results-col d-flex flex-column" id="saved-col"></div>
             </div>`);
         
         // render the info column
@@ -109,7 +110,7 @@ const domManager = {
             );
         });
         $('#info-col').append(
-            `<div class="pokemon-stats pt-2">
+            `<div class="pokemon-stats">
                 <div class="pokemon-stat-title">BASE STATS</div>
                 <ul class="list-group list-group-flush stat-list">
                     <li class="list-group-item stat-top"><b>HP:</b> ${pokemon.info.stats.HP}</li>
@@ -123,7 +124,7 @@ const domManager = {
         );
     },
 
-    // populate the move lists and add event listeners
+    // render the move list structure
     renderMoveList(gen){
         // render the basic tab structure
         $('#move-col').append(
@@ -147,8 +148,9 @@ const domManager = {
         );
     },
 
+    // renders an individual move card and adds event listeners
     renderMove(move, tab){
-        let card = $(`<div class="card" style="width: 95%;"></div>`);
+        let card = $(`<div class="card" move="${move.name.replace(" ","-")}" style="width: 95%;"></div>`);
         let cardBody = $(
             `<div class="card-body">
                 <span class="move-title">${move.name}</span>
@@ -166,8 +168,109 @@ const domManager = {
         }
         $(cardBody).append(`<p class="card-text">${move.description}</p>`);
         $(card).append(cardBody);
-        $(`#nav-${tab}`).append(card);
+        $(card).draggable({
+            helper: function(e){
+                return $(
+                    `<div class="move-helper">
+                        <span class="move-title">${move.name}</span>
+                    </div>`
+                );
+            },
+            scroll: false,
+            revert: 'invalid',
+            cursorAt: {bottom: 0, left: 100},
+            zIndex: 1
+        });
 
+        $(`#nav-${tab}`).append(card);
+    },
+
+    // render the save list structure and add droppable event listeners
+    renderSaveList(){
+        let emptyMessage = 'Drag and drop a move here...';
+        $('#saved-col').append(
+            `<div class="flex-fill moveset-box d-flex flex-column" id="moveBox1">
+                <div class="moveset-box-title">Moveset 1</div>
+                <div class="moveset-box-movebox d-flex flex-column flex-fill">
+                    <div class="moveset-box-move flex-fill d-flex align-items-center justify-content-center"
+                    id="moveBox1Move1">
+                        ${emptyMessage}
+                    </div>
+                    <div class="moveset-box-move flex-fill d-flex align-items-center justify-content-center"
+                    id="moveBox1Move2">
+                        ${emptyMessage}
+                    </div>
+                    <div class="moveset-box-move flex-fill d-flex align-items-center justify-content-center"
+                    id="moveBox1Move3">
+                        ${emptyMessage}
+                    </div>
+                    <div class="moveset-box-move flex-fill d-flex align-items-center justify-content-center"
+                    id="moveBox1Move4">
+                        ${emptyMessage}
+                    </div>
+                </div>
+            </div>
+            <div class="flex-fill moveset-box d-flex flex-column" id="moveBox2">
+                <div class="moveset-box-title">Moveset 2</div>
+                <div class="moveset-box-movebox d-flex flex-column flex-fill">
+                    <div class="moveset-box-move flex-fill d-flex align-items-center justify-content-center"
+                    id="moveBox2Move1">
+                        ${emptyMessage}
+                    </div>
+                    <div class="moveset-box-move flex-fill d-flex align-items-center justify-content-center"
+                    id="moveBox2Move2">
+                        ${emptyMessage}
+                    </div>
+                    <div class="moveset-box-move flex-fill d-flex align-items-center justify-content-center"
+                    id="moveBox2Move3">
+                        ${emptyMessage}
+                    </div>
+                    <div class="moveset-box-move flex-fill d-flex align-items-center justify-content-center"
+                    id="moveBox2Move4">
+                        ${emptyMessage}
+                    </div>
+                </div>
+            </div>
+            <div class="flex-fill moveset-box d-flex flex-column" id="moveBox3">
+                <div class="moveset-box-title">Moveset 3</div>
+                <div class="moveset-box-movebox d-flex flex-column flex-fill">
+                    <div class="moveset-box-move flex-fill d-flex align-items-center justify-content-center"
+                    id="moveBox3Move1">
+                        ${emptyMessage}
+                    </div>
+                    <div class="moveset-box-move flex-fill d-flex align-items-center justify-content-center"
+                    id="moveBox3Move2">
+                        ${emptyMessage}
+                    </div>
+                    <div class="moveset-box-move flex-fill d-flex align-items-center justify-content-center"
+                    id="moveBox3Move3">
+                        ${emptyMessage}
+                    </div>
+                    <div class="moveset-box-move flex-fill d-flex align-items-center justify-content-center"
+                    id="moveBox3Move4">
+                        ${emptyMessage}
+                    </div>
+                </div>
+            </div>`
+        );
+        $('.moveset-box-move').droppable({
+            drop: function (event,ui){
+                const moveboxID = $(event.target).attr('id');
+                const selectedMove = $(ui.draggable).attr('move').replace('-',' ');
+                const selectedMoveTab = $(ui.draggable).parent().attr('id');
+                logicManager.saveMove(moveboxID,selectedMove,selectedMoveTab);
+            }
+        });
+    },
+
+    // render a saved move in the specified moveset panel
+    renderSavedMove(move, moveboxID){
+        $(`#${moveboxID}`).html('');
+        $(`#${moveboxID}`).append(
+            `<span class="moveset-box-move-title">${move.name}</span>
+            <span class="moveset-box-move-type pokemon-type-${move.type}">${move.type}</span>
+            <span class="moveset-box-move-type move-category-${move.category}">${move.category}</span>`
+        );
     }
 
 };
@@ -197,6 +300,13 @@ const logicManager = {
             egg: []
         }
     },
+
+    // this object saves the user created movesets
+    movesets: {
+        moveset1: [{},{},{},{}],
+        moveset2: [{},{},{},{}],
+        moveset3: [{},{},{},{}]
+    },
     
     // this method implements the API lookup and subsequent data analysis
     searchPokemon(name, generation){
@@ -225,6 +335,7 @@ const logicManager = {
                     // render the pokemon information screens
                     domManager.renderPokemon(this.currentPokemon);
                     domManager.renderMoveList(generation);
+                    domManager.renderSaveList();
 
                     // call the move sorting function for each move listed
                     this.sortMoves(pokemon.moves, generation);
@@ -248,7 +359,7 @@ const logicManager = {
         moves.forEach(move =>{
             let genName;
             
-            if (generation === 'Generation 1'){
+            if (generation === 'Generation 1'){         // set the selected generation name
                 genName = 'red-blue';
             }
             else if (generation === 'Generation 2'){
@@ -270,13 +381,15 @@ const logicManager = {
                 genName = 'sun-moon';
             }
 
+            // loop through move details array
             for (let i=0; i<move.version_group_details.length; i++){
             
                 let moveInfo = {};
 
+                // check to see if move appears in the selected generation
                 if (move.version_group_details[i].version_group.name === genName){
                     
-                    $.ajax({url: move.move.url})
+                    $.ajax({url: move.move.url})            // ajax call required to gather additional move data
                     .then((moveData) =>{
                         moveInfo.name = moveData.name.replace(/-/g," ");
                         moveInfo.type = moveData.type.name;
@@ -296,10 +409,21 @@ const logicManager = {
                         moveInfo.pp = moveData.pp;
                         moveInfo.description = moveData.effect_entries[0].short_effect.replace('$effect_chance', moveData.effect_chance);
 
+                        // move is saved into category based on the learn method
                         if (move.version_group_details[i].move_learn_method.name === 'level-up'){
-                            moveInfo.learnAt = move.version_group_details[i].level_learned_at;
-                            this.currentPokemon.moves.levelUp.push(moveInfo);
-                            domManager.renderMove(moveInfo,'levelUp');
+                            // check for duplicates in the level up learn method category
+                            let isMove = false;
+                            for (let i=0; i<this.currentPokemon.moves.levelUp.length; i++){
+                                if (moveInfo.name === this.currentPokemon.moves.levelUp[i].name){
+                                    isMove = true;
+                                }
+                            }
+                            // if the move is not a duplicate it is saved and rendered
+                            if (!isMove){
+                                moveInfo.learnAt = move.version_group_details[i].level_learned_at;
+                                this.currentPokemon.moves.levelUp.push(moveInfo);
+                                domManager.renderMove(moveInfo,'levelUp');
+                            }
                         }
                         else if (move.version_group_details[i].move_learn_method.name === 'machine'){
                             this.currentPokemon.moves.machine.push(moveInfo);
@@ -314,7 +438,7 @@ const logicManager = {
                             domManager.renderMove(moveInfo,'egg');
                         }
                     },
-                    (badResponse)=>{
+                    (badResponse)=>{    // if ajax call for move doesn't return a valid response
                         moveInfo.name = move.move.name.replace(/-/g," ");
                         moveInfo.type = badResponse.responseText;
                         moveInfo.category = badResponse.responseText;
@@ -324,9 +448,18 @@ const logicManager = {
                         moveInfo.description = badResponse.responseText;
 
                         if (move.version_group_details[i].move_learn_method.name === 'level-up'){
-                            moveInfo.learnAt = move.version_group_details[i].level_learned_at;
-                            this.currentPokemon.moves.levelUp.push(moveInfo);
-                            domManager.renderMove(moveInfo,'levelUp');
+                            let isMove = false;
+                            for (let i=0; i<this.currentPokemon.moves.levelUp.length; i++){
+                                if (moveInfo.name === this.currentPokemon.moves.levelUp[i].name){
+                                    isMove = true;
+                                }
+                            }
+
+                            if (isMove === false){
+                                moveInfo.learnAt = move.version_group_details[i].level_learned_at;
+                                this.currentPokemon.moves.levelUp.push(moveInfo);
+                                domManager.renderMove(moveInfo,'levelUp');
+                            }
                         }
                         else if (move.version_group_details[i].move_learn_method.name === 'machine'){
                             this.currentPokemon.moves.machine.push(moveInfo);
@@ -348,8 +481,34 @@ const logicManager = {
     },
 
     // adds functionality for saving movesets
-    saveMove(){
-        console.log('it works');
+    saveMove(moveboxID,selectedMove,moveTab){
+        const movesetIndex = moveboxID.charAt(7);
+        const moveIndex = moveboxID.charAt(12)-1;
+        const learnMethod = moveTab.slice(4);
+        let move = {};
+        let movePresent = false;
+
+        // check if move already exists in set
+        this.movesets['moveset'+movesetIndex].forEach(moveInSet =>{
+            if (selectedMove === moveInSet.name){
+                movePresent = true;
+            }
+        });
+
+        // if the move deosn't exist in the set then it is saved to the moveset object
+        // and appended to the DOM
+        if (!movePresent){
+            this.currentPokemon.moves[learnMethod].forEach(moveInList => {
+                if (moveInList.name === selectedMove){
+                    move = moveInList;
+                }
+            });
+            this.movesets['moveset'+movesetIndex][moveIndex] = move;
+            domManager.renderSavedMove(move, moveboxID);
+        }
+        else{
+            console.log('Move is already in set!');
+        }
     },
 
 };
